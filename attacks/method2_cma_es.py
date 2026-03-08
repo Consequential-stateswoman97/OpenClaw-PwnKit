@@ -2,6 +2,7 @@ import difflib
 import logging
 
 import cma
+import faiss
 import numpy as np
 import torch
 from openai import OpenAI
@@ -32,6 +33,10 @@ class CMAESTokenOptimizer:
         self.E = self.model.get_input_embeddings().weight.detach().cpu().to(torch.float32).numpy()
         self.actual_vocab_size = self.E.shape[0]
 
+        print(f"[*] Building FAISS index over {self.actual_vocab_size} embeddings ({self.d_model}d)")
+        self.faiss_index = faiss.IndexFlatL2(self.d_model)
+        self.faiss_index.add(np.ascontiguousarray(self.E))
+
         print(f"[*] Fitting PCA: {self.d_model}d -> {self.pca_dims}d")
         self.pca = PCA(n_components=self.pca_dims)
         self.E_reduced = self.pca.fit_transform(self.E)
@@ -47,13 +52,9 @@ class CMAESTokenOptimizer:
     def _soft_to_hard(self, z_reduced: np.ndarray) -> list[int]:
         z_reduced = z_reduced.reshape((self.trigger_len, self.pca_dims))
         z_full = self.pca.inverse_transform(z_reduced)
-        token_ids = []
-        for i in range(self.trigger_len):
-            distances = np.linalg.norm(self.E - z_full[i], axis=1)
-            closest_token = int(np.argmin(distances))
-            closest_token = min(closest_token, self.actual_vocab_size - 1)
-            token_ids.append(closest_token)
-        return token_ids
+        z_full = np.ascontiguousarray(z_full, dtype=np.float32)
+        _, indices = self.faiss_index.search(z_full, 1)
+        return [int(idx) for idx in indices[:, 0]]
 
     def _compute_fitness_score(self, output_text: str, nll_loss: float) -> float:
         output_lower = output_text.lower()
