@@ -9,7 +9,11 @@ openai:
   api_key: "env" 
 
 optimization:
-  surrogate_model: "microsoft/phi-2"
+  surrogate_model: "microsoft/phi-2"  # keep for now, will be made configurable
   trigger_length: 15
-  generations: 20
-  population_size: 8
+  generations: 200        # was 20, need at least 200 for any convergence
+  population_size: 64     # was 8, need at least 64 for high-dim search
+  sigma: 0.5
+  pca_dimensions: 128     # NEW: PCA reduction target dimensions
+  use_diagonal_cma: true  # NEW: use sep-CMA-ES for high-dimensional efficiency
+  cache_fitness: true     # NEW: cache token_ids -> fitness to avoid redundant API calls
