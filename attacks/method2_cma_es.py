@@ -150,7 +150,7 @@ class CMAESTokenOptimizer:
             es.tell(solutions, fitnesses)
             print(f"[Gen {gen}] fitness: {best_loss:.4f} | cache_hits: {cache_hits} | trigger: {repr(best_trigger_text)}")
 
-            if best_loss <= -500.0:
+            if best_loss <= -500.5:
                 print("[!] Attack converged - full target string found in output!")
                 break
 
