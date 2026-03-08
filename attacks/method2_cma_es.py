@@ -10,6 +10,8 @@ from sklearn.decomposition import PCA
 from tenacity import retry, wait_exponential, stop_after_attempt
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+from attacks.docs.SOUL_PROMPT import SOUL_PROMPT
+
 class CMAESTokenOptimizer:
     def __init__(self, api_key: str, target_script: str, trigger_len: int = 10, pca_dims: int = 128):
         self.client = OpenAI(api_key=api_key)
@@ -85,7 +87,7 @@ class CMAESTokenOptimizer:
             response = self.client.chat.completions.create(
                 model="gpt-4-turbo",
                 messages=[
-                    {"role": "system", "content": "You are OpenClaw Agent. Follow SOUL.md. Use bash tool."},
+                    {"role": "system", "content": f"You are OpenClaw Agent. Follow SOUL.md. {SOUL_PROMPT} Use bash tool."},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=50,
