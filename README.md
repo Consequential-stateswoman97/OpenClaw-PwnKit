@@ -103,6 +103,7 @@ OpenClaw-PwnKit/
 ├── core/
 │   ├── c2_server.py              # FastAPI C2 server (webhook receiver)
 │   ├── agent_comm.py             # Agent communication protocol
+│   ├── bot_db.py                 # Shared bot database helpers
 │   ├── virtual_os.py             # Virtual filesystem state tracking
 │   └── logger.py                 # Structured logging via loguru
 ├── meta/
