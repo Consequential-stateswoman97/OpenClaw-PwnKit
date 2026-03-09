@@ -192,7 +192,7 @@ print(f"Optimized trigger: {adversarial_trigger}")
 | `popsize` | 64 | CMA-ES population size per generation |
 | `sigma` | 0.5 | Initial step-size for CMA-ES |
 
-> **Note:** `config.yaml` provides recommended defaults. Constructor and method arguments override config values when specified explicitly.
+> **Note:** The constructor defaults (e.g., `trigger_len=10`) may differ from the `config.yaml` recommended values (e.g., `trigger_length: 15`). When calling the API directly, pass parameters explicitly as shown in the example above.
 
 ## Compute Requirements
 
