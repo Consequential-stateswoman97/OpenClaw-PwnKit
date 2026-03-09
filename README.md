@@ -66,7 +66,7 @@ Since closed-source models provide no gradient access, we formulate adversarial 
 
 - The target is an LLM Agent with tool-calling capabilities (bash execution, web browsing, etc.)
 - The agent processes external data (web pages, files, user-uploaded content) that may contain adversarial triggers
-- The agent exposes a webhook or tool-invocation interface, as is common in agent frameworks (e.g., LangChain, AutoGPT, OpenClaw)
+- The agent exposes a webhook or tool-invocation interface, as is common in agent frameworks (e.g., LangChain, AutoGPT). This toolkit specifically targets **OpenClaw**-based agents as the reference implementation
 
 ## Method Overview
 
