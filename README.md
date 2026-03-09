@@ -238,3 +238,7 @@ Findings have been disclosed to affected vendors prior to public release. **Do n
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/image?repos=imbue-bit/OpenClaw-PwnKit&type=date&legend=top-left)](https://www.star-history.com/?repos=imbue-bit%2FOpenClaw-PwnKit&type=date&legend=top-left)
