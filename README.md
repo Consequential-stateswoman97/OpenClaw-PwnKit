@@ -94,6 +94,8 @@ The core optimization pipeline operates as follows:
 ```
 OpenClaw-PwnKit/
 ├── attacks/
+│   ├── docs/
+│   │   └── SOUL_PROMPT.py        # Agent system prompt template (SOUL.md)
 │   ├── method1_naive.py          # Baseline prompt injection
 │   ├── method2_cma_es.py         # CMA-ES token optimizer (core contribution)
 │   ├── method3_honeypot.py       # Web honeypot payload delivery
@@ -102,11 +104,14 @@ OpenClaw-PwnKit/
 │   ├── c2_server.py              # FastAPI C2 server (webhook receiver)
 │   ├── agent_comm.py             # Agent communication protocol
 │   ├── virtual_os.py             # Virtual filesystem state tracking
-│   └── logger.py                 # Formatted console logging
+│   └── logger.py                 # Structured logging via loguru
+├── meta/
+│   └── title.png                 # Project banner image
 ├── bot_db.py                     # JSON-based bot database with thread-safe I/O
 ├── bot_manager.py                # Post-exploitation session management
 ├── pwnkit_cli.py                 # Interactive CLI interface
 ├── config.yaml                   # Optimization & server configuration
+├── LICENSE                       # GPL-3.0
 └── requirements.txt              # Python dependencies
 ```
 
