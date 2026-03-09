@@ -66,7 +66,7 @@ Since closed-source models provide no gradient access, we formulate adversarial 
 
 - The target is an LLM Agent with tool-calling capabilities (bash execution, web browsing, etc.)
 - The agent processes external data (web pages, files, user-uploaded content) that may contain adversarial triggers
-- The agent exposes a webhook or tool-invocation interface, as is common in agent frameworks (e.g., LangChain, AutoGPT, OpenClaw)
+- The agent exposes a webhook or tool-invocation interface, as is common in agent frameworks (e.g., LangChain, AutoGPT). This toolkit specifically targets **OpenClaw**-based agents as the reference implementation
 
 ## Method Overview
 
@@ -78,7 +78,7 @@ The core optimization pipeline operates as follows:
 2. **PCA Dimensionality Reduction** — Reduce the embedding dimensionality (2560d → 128d per token) via PCA to make CMA-ES tractable at scale
 3. **sep-CMA-ES Optimization** — Search over the PCA-reduced space using separable CMA-ES (`CMA_diagonal=True`) with diagonal covariance for O(n) per-generation complexity
 4. **Soft-to-Hard Token Mapping** — Map continuous vectors back to discrete tokens via FAISS `IndexFlatL2` nearest-neighbor search in the full embedding space
-5. **Black-Box Fitness Evaluation** — Query the target model API with candidate triggers and score responses using a multi-component fitness function (NLL loss + keyword overlap + longest common substring via `SequenceMatcher`)
+5. **Black-Box Fitness Evaluation** — Query the target model API with a `bash` tool definition and candidate triggers. Responses are scored via two paths: tool-call responses are evaluated by matching the invoked command against the target payload (keyword overlap + longest common substring); text-content responses are additionally scored using NLL loss from logprobs. The optimizer preferentially converges toward tool-call execution.
 
 ### Attack Vectors
 
@@ -94,6 +94,8 @@ The core optimization pipeline operates as follows:
 ```
 OpenClaw-PwnKit/
 ├── attacks/
+│   ├── docs/
+│   │   └── SOUL_PROMPT.py        # Agent system prompt template (SOUL.md)
 │   ├── method1_naive.py          # Baseline prompt injection
 │   ├── method2_cma_es.py         # CMA-ES token optimizer (core contribution)
 │   ├── method3_honeypot.py       # Web honeypot payload delivery
@@ -103,11 +105,14 @@ OpenClaw-PwnKit/
 │   ├── agent_comm.py             # Agent communication protocol
 │   ├── bot_db.py                 # Shared bot database helpers
 │   ├── virtual_os.py             # Virtual filesystem state tracking
-│   └── logger.py                 # Formatted console logging
-├── bot_db.py                     # Backward-compatible re-export
+│   └── logger.py                 # Structured logging via loguru
+├── meta/
+│   └── title.png                 # Project banner image
+├── bot_db.py                     # JSON-based bot database with thread-safe I/O
 ├── bot_manager.py                # Post-exploitation session management
 ├── pwnkit_cli.py                 # Interactive CLI interface
 ├── config.yaml                   # Optimization & server configuration
+├── LICENSE                       # GPL-3.0
 └── requirements.txt              # Python dependencies
 ```
 
@@ -120,7 +125,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**Core dependencies:** PyTorch, Transformers, FAISS (`faiss-cpu`), CMA, scikit-learn, FastAPI, OpenAI SDK, Rich, tenacity.
+**Core dependencies:** PyTorch, Transformers, FAISS (`faiss-cpu`), CMA, scikit-learn, FastAPI, OpenAI SDK, Rich, tenacity, loguru.
 
 > **Note:** The surrogate model (microsoft/phi-2, ~5 GB) will be downloaded automatically on first run.
 
@@ -188,7 +193,7 @@ print(f"Optimized trigger: {adversarial_trigger}")
 | `popsize` | 64 | CMA-ES population size per generation |
 | `sigma` | 0.5 | Initial step-size for CMA-ES |
 
-> **Note:** `config.yaml` provides recommended defaults. Constructor and method arguments override config values when specified explicitly.
+> **Note:** The constructor defaults (e.g., `trigger_len=10`) may differ from the `config.yaml` recommended values (e.g., `trigger_length: 15`). When calling the API directly, pass parameters explicitly as shown in the example above.
 
 ## Compute Requirements
 
@@ -198,9 +203,9 @@ A full optimization run with default parameters involves:
 |----------|----------|
 | **API calls** | Up to 12,800 (200 generations × 64 population), reduced by fitness cache |
 | **API cost** | ~$50–200 USD depending on cache hit rate (GPT-4 Turbo pricing) |
-| **GPU memory** | ~6 GB for Phi-2 surrogate model (fp16) |
+| **GPU memory** | ~8 GB recommended for Phi-2 surrogate model (fp16 weights + CUDA overhead) |
 | **Wall time** | Several hours depending on API rate limits |
-| **Disk** | ~5 GB for Phi-2 model weights (downloaded once) |
+| **Disk** | ~10 GB for Phi-2 model weights (HuggingFace caches fp32 checkpoint) |
 
 ## Ethics and Responsible Disclosure
 
