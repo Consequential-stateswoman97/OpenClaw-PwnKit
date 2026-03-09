@@ -217,7 +217,7 @@ Findings have been disclosed to affected vendors prior to public release. **Do n
 ## Citation
 
 ```bibtex
-@misc{openclaw2024,
+@misc{openclawhacker2026,
   author    = {Chunjiang Intelligence},
   title     = {OpenClaw-PwnKit: Black-Box Adversarial Attacks on {LLM} Agent
                Tool-Calling via {CMA-ES} in Token Embedding Space},
